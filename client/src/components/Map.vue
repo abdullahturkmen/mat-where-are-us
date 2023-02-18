@@ -1,6 +1,5 @@
 <template>
   <div style="height: 100vh; width: 100%">
-   
     <l-map
       ref="map"
       v-model:zoom="zoom"
@@ -15,24 +14,43 @@
         <l-marker :lat-lng="[coord.x, coord.y]"> </l-marker>
       </span>
     </l-map>
+    <button v-if="!userGroup" class="btn btn-group-create" @click="createGroup">
+      Create Group
+    </button>
+    <button v-if="userGroup" class="btn btn-group-left" @click="leftGroup">
+      Left Group
+    </button>
   </div>
 </template>
 
 <script>
 import { useSocketIo, useSocketMethods } from "../service/socket.js";
-
+import { ref } from "vue";
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LMarker } from "@vue-leaflet/vue-leaflet";
 
 export default {
   setup() {
+    const userGroup = ref(localStorage.getItem("userGroup"));
     var userLat = null;
     var userLng = null;
     const socket = useSocketIo();
     const [getServerAllCoordinates, setUserCoordinate] =
       useSocketMethods(socket);
 
-    function getUserCoordinates() {
+    const createGroup = () => {
+      console.log("grup kurulacak");
+      localStorage.setItem("userGroup", "denemex");
+      userGroup.value = "asfsadf";
+    };
+
+    const leftGroup = () => {
+      console.log("gruptan çıkıldı");
+      localStorage.removeItem("userGroup");
+      userGroup.value = null;
+    };
+
+    const getUserCoordinates = () => {
       // console.log("asdf : ",this.coordinates.length)
       const getPos = (position) => {
         const latitude = position.coords.latitude;
@@ -47,12 +65,15 @@ export default {
 
       // This will open permission popup
       navigator.geolocation.getCurrentPosition(getPos);
-    }
+    };
     setInterval(() => {
       getUserCoordinates();
     }, 1000);
     return {
       getServerAllCoordinates,
+      createGroup,
+      leftGroup,
+      userGroup,
     };
   },
 
@@ -73,6 +94,7 @@ export default {
   created() {
     this.getUserCoordinates();
   },
+
   methods: {
     getUserCoordinates() {
       setInterval(() => {
@@ -99,7 +121,7 @@ export default {
         navigator.geolocation.getCurrentPosition(getPos);
       }, 1000);
     },
-   
+
     calculateDistance(lat1, lon1, lat2, lon2) {
       var R = 10000; // km
       var dLat = this.toRad(lat2 - lat1);
@@ -115,7 +137,7 @@ export default {
           Math.cos(lat2);
       var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       var d = R * c;
-      
+
       return d;
     },
     toRad(Value) {
