@@ -2,7 +2,7 @@ import {ref} from "vue";
 import openSocket from "socket.io-client";
 
 export function useSocketIo() {
-    return openSocket(process.env.VUE_APP_SERVER_ADDRESS);
+    return openSocket(process.env.VUE_APP_SERVER_ADDRESS, {transports: ['websocket']});
 }
 
 export function useSocketMethods(socket) {
