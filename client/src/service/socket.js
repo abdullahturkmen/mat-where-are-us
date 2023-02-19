@@ -1,5 +1,7 @@
 import {ref} from "vue";
 import openSocket from "socket.io-client";
+import {toast} from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 
 export function useSocketIo() {
     return openSocket(process.env.VUE_APP_SERVER_ADDRESS, {transports: ['websocket']});
@@ -9,11 +11,11 @@ export function useSocketMethods(socket) {
 
 
     const allUserCoordinates = ref("");
+    const allUserMessages = ref("");
+    var userMsgList = []
 
     socket.on("allUserCoordinates", allUserCoordinatesServer => {
         var filteredDatas = []
-
- 
 
         allUserCoordinatesServer.filter(e => e.group == undefined).map(e => {
             filteredDatas.push(e)
@@ -22,6 +24,7 @@ export function useSocketMethods(socket) {
         if (localStorage.getItem('userGroup')) {
             if (allUserCoordinatesServer.filter(e => e.group === localStorage.getItem('userGroup')).length === 0) {
                 localStorage.removeItem('userGroup')
+                setUserLeftGroup()
             } else {
                 filteredDatas = []
                 allUserCoordinatesServer.filter(e => e.group === localStorage.getItem('userGroup')).map(e => {
@@ -34,7 +37,6 @@ export function useSocketMethods(socket) {
 
         allUserCoordinates.value = filteredDatas;
 
-
     });
 
     const setUserLeftGroup = () => {
@@ -45,11 +47,36 @@ export function useSocketMethods(socket) {
         socket.emit("joinGroup", value);
     }
 
-
     const setUserCoordinate = (value) => {
         socket.emit("updateCoordinate", value);
     }
 
+    const sendMessagesServer = (msg) => {
+        userMsgList.push(msg)
+        allUserMessages.value = userMsgList;
+        socket.emit("sendMessagesServer", msg);
+        console.log("gönderilen mesajlar : ", allUserMessages.value)
+        
+    } 
+    
+    socket.on('newMessage', newMessage => {
+        userMsgList.push(newMessage)
+        allUserMessages.value = userMsgList;
+        toast.success(newMessage, {
+            icon: false,
+            autoClose: 4000
+        })
+        console.log("gelen mesajlar : ", allUserMessages.value)
+        
+    })
 
-    return [allUserCoordinates, setUserCoordinate, setUserJoinGroup, setUserLeftGroup];
+
+    return [
+        allUserCoordinates,
+        setUserCoordinate,
+        setUserJoinGroup,
+        setUserLeftGroup,
+        sendMessagesServer,
+        allUserMessages
+    ];
 }

@@ -1,5 +1,14 @@
 <template>
   <div style="height: 100vh; width: 100%">
+    <div>
+      <input v-model="userMsg" />
+      <button @click="sendMessage(userMsg)">gönder</button>
+    </div>
+
+    <ul>
+      <li v-for="(msg, index) in getNewMessages" :key="index">{{ msg }}</li>
+    </ul>
+
     <l-map ref="map" v-model:zoom="zoom" :center="[userLat, userLng]">
       <l-tile-layer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -10,12 +19,24 @@
         <l-marker :lat-lng="[coord.x, coord.y]"> </l-marker>
       </span>
     </l-map>
-    <button v-if="!userGroup" class="btn btn-group-create" @click="createGroup">
-      Create Group
-    </button>
-    <button v-if="userGroup" class="btn btn-group-left" @click="leftGroup">
-      Left Group
-    </button>
+    <div class="buttons">
+      <button class="btn btn-chat" >
+        Comments
+      </button>
+      <button v-if="userGroup" class="btn btn-share">
+        Share
+      </button>
+      <button
+        v-if="!userGroup"
+        class="btn btn-group-create"
+        @click="createGroup"
+      >
+        Create Group
+      </button>
+      <button v-if="userGroup" class="btn btn-group-left" @click="leftGroup">
+        Left Group
+      </button>
+    </div>
   </div>
 </template>
 
@@ -30,12 +51,15 @@ export default {
     const userGroup = ref(localStorage.getItem("userGroup"));
     const userLat = ref("41.016147");
     const userLng = ref("28.986725");
+    const userMsg = ref("");
     const socket = useSocketIo();
     const [
       getServerAllCoordinates,
       setUserCoordinate,
       setUserJoinGroup,
       setUserLeftGroup,
+      sendMessagesServer,
+      getNewMessages,
     ] = useSocketMethods(socket);
 
     const createGroup = () => {
@@ -51,6 +75,11 @@ export default {
       userGroup.value = null;
     };
 
+    const sendMessage = (e) => {
+      userMsg.value = "";
+      sendMessagesServer(e);
+    };
+
     const getUserCoordinates = () => {
       // console.log("asdf : ",this.coordinates.length)
       const getPos = (position) => {
@@ -63,6 +92,8 @@ export default {
         setUserCoordinate({ x: latitude, y: longitude });
         //console.log("gidyyoor", { x: userLat, y: userLng });
       };
+
+      console.log("izin popup : ", navigator.geolocation)
 
       // This will open permission popup
       navigator.geolocation.getCurrentPosition(getPos);
@@ -86,6 +117,7 @@ export default {
     setInterval(() => {
       getUserCoordinates();
     }, 1000);
+
     return {
       getServerAllCoordinates,
       createGroup,
@@ -93,6 +125,9 @@ export default {
       userGroup,
       userLat,
       userLng,
+      sendMessage,
+      userMsg,
+      getNewMessages,
     };
   },
 
@@ -105,32 +140,8 @@ export default {
 
   data() {
     return {
-      zoom: 5,
+      zoom: 6,
     };
-  },
-
-  methods: {
-    calculateDistance(lat1, lon1, lat2, lon2) {
-      var R = 10000; // km
-      var dLat = this.toRad(lat2 - lat1);
-      var dLon = this.toRad(lon2 - lon1);
-      var lat1 = this.toRad(lat1);
-      var lat2 = this.toRad(lat2);
-
-      var a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.sin(dLon / 2) *
-          Math.sin(dLon / 2) *
-          Math.cos(lat1) *
-          Math.cos(lat2);
-      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      var d = R * c;
-
-      return d;
-    },
-    toRad(Value) {
-      return (Value * Math.PI) / 180;
-    },
   },
 };
 </script>

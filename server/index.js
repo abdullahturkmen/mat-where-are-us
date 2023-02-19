@@ -10,6 +10,7 @@ var PORT = process.env.PORT || 3001;
 
 var userCoordinates = [];
 
+
 app.get('/', (req, res) => {
     res.send()
 })
@@ -18,6 +19,15 @@ app.get('/', (req, res) => {
 io.on("connection", (socket) => { // console.log("gelldddiiii")
 
     io.emit("allUserCoordinates", userCoordinates)
+
+    socket.on("sendMessagesServer", (e) => {
+
+         console.log("mesaj : ", e)
+
+         socket.broadcast.emit("newMessage", e)
+       
+        //io.emit("allUserCoordinates", userCoordinates)
+    })
 
     socket.on("leftGroup", () => {
 

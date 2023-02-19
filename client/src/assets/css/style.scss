@@ -2,35 +2,53 @@ body {
     padding: 0;
     margin: 0;
 }
-
-.btn {
+.buttons {
     position: fixed;
     z-index: 9999999;
-    font-size: 10px;
+    bottom: 16px;
+    right: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.btn {
+    font-size: 9px;
     border-radius: 5px;
     cursor: pointer;
-    &-group {
-        &-create,
-        &-left {
-            top: 16px;
-            right: 16px;
 
-            &::before {
-                width: 36px;
-                height: 36px;
-                display: block;
-                margin: 2px auto;
-            }
+    &::before {
+        width: 20px;
+        height: 20px;
+        display: block;
+        margin: 2px auto;
+    }
+
+    &-share {
+        background-color: #c3c3c3;
+        &::before {
+            content: url("../img/share-icon.svg");
         }
-        &-create {
-            &::before {
-                content: url("../img/create-group-icon.svg");
-            }
+    }
+
+    &-chat {
+        background-color: #03a9f4;
+        &::before {
+            content: url("../img/chat-icon.svg");
         }
-        &-left {
-            &::before {
-                content: url("../img/left-group-icon.svg");
-            }
+    }
+
+   
+    &-group-create {
+        background-color: #4caf50;
+        &::before {
+            content: url("../img/create-group-icon.svg");
+        }
+    }
+    &-group-left {
+        background-color: #ff5656;
+        &::before {
+            content: url("../img/left-group-icon.svg");
         }
     }
 }
