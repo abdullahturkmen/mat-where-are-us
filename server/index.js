@@ -19,6 +19,40 @@ io.on("connection", function (socket) { // console.log("gelldddiiii")
 
     io.emit("allUserCoordinates", userCoordinates)
 
+    socket.on("leftGroup", function () {
+
+        // console.log("e : ", e)
+
+        // console.log("user id : ", userCoordinates.findIndex(e => e.user_id === socket.id))
+
+        var userIndex = userCoordinates.findIndex(e => e.user_id === socket.id)
+
+        if (userIndex >= 0) {
+            userCoordinates[userIndex] = {
+                ... userCoordinates[userIndex],
+                group: undefined
+            }
+        }
+        io.emit("allUserCoordinates", userCoordinates)
+    })
+
+    socket.on("joinGroup", function (e) {
+
+        // console.log("e : ", e)
+
+        // console.log("user id : ", userCoordinates.findIndex(e => e.user_id === socket.id))
+
+        var userIndex = userCoordinates.findIndex(e => e.user_id === socket.id)
+
+        if (userIndex >= 0) {
+            userCoordinates[userIndex] = {
+                ... userCoordinates[userIndex],
+                group: e
+            }
+        }
+        io.emit("allUserCoordinates", userCoordinates)
+    })
+
 
     socket.on("updateCoordinate", function (e) {
 
@@ -33,12 +67,10 @@ io.on("connection", function (socket) { // console.log("gelldddiiii")
                 ... e,
                 user_id: socket.id
             })
-        } else { // console.log("else içi")
+        } else {
 
-            userCoordinates[userIndex] = {
-                ... e,
-                user_id: socket.id
-            }
+            userCoordinates[userIndex].x = e.x
+            userCoordinates[userIndex].y = e.y
         } io.emit("allUserCoordinates", userCoordinates)
     })
 

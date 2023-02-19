@@ -1,10 +1,7 @@
 <template>
   <div style="height: 100vh; width: 100%">
-    <l-map
-      ref="map"
-      v-model:zoom="zoom"
-      :center="[this.clientLat, this.clientLng]"
-    >
+    {{ getServerAllCoordinates }}
+    <l-map ref="map" v-model:zoom="zoom" :center="[userLat, userLng]">
       <l-tile-layer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         layer-type="base"
@@ -32,21 +29,26 @@ import { LMap, LTileLayer, LMarker } from "@vue-leaflet/vue-leaflet";
 export default {
   setup() {
     const userGroup = ref(localStorage.getItem("userGroup"));
-    var userLat = null;
-    var userLng = null;
+    const userLat = ref("41.016147");
+    const userLng = ref("28.986725");
     const socket = useSocketIo();
-    const [getServerAllCoordinates, setUserCoordinate] =
-      useSocketMethods(socket);
+    const [
+      getServerAllCoordinates,
+      setUserCoordinate,
+      setUserJoinGroup,
+      setUserLeftGroup,
+    ] = useSocketMethods(socket);
 
     const createGroup = () => {
-      console.log("grup kurulacak");
-      localStorage.setItem("userGroup", "denemex");
-      userGroup.value = "asfsadf";
+      var generatedKey = generateKey(8);
+      localStorage.setItem("userGroup", generatedKey);
+      userGroup.value = generatedKey;
+      setUserJoinGroup(generatedKey);
     };
 
     const leftGroup = () => {
-      console.log("gruptan çıkıldı");
       localStorage.removeItem("userGroup");
+      setUserLeftGroup();
       userGroup.value = null;
     };
 
@@ -56,16 +58,32 @@ export default {
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
 
-        userLat = latitude;
-        userLng = longitude;
+        userLat.value = latitude;
+        userLng.value = longitude;
 
-        setUserCoordinate({ x: userLat, y: userLng });
+        setUserCoordinate({ x: latitude, y: longitude });
         //console.log("gidyyoor", { x: userLat, y: userLng });
       };
 
       // This will open permission popup
       navigator.geolocation.getCurrentPosition(getPos);
     };
+
+    const generateKey = (length) => {
+      let result = "";
+      const characters =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-/+";
+      const charactersLength = characters.length;
+      let counter = 0;
+      while (counter < length) {
+        result += characters.charAt(
+          Math.floor(Math.random() * charactersLength)
+        );
+        counter += 1;
+      }
+      return result;
+    };
+
     setInterval(() => {
       getUserCoordinates();
     }, 1000);
@@ -74,6 +92,8 @@ export default {
       createGroup,
       leftGroup,
       userGroup,
+      userLat,
+      userLng,
     };
   },
 
@@ -86,42 +106,11 @@ export default {
 
   data() {
     return {
-      clientLat: 41.016147,
-      clientLng: 28.986725,
       zoom: 5,
     };
   },
-  created() {
-    this.getUserCoordinates();
-  },
 
   methods: {
-    getUserCoordinates() {
-      setInterval(() => {
-        // console.log("asdf : ",this.coordinates.length)
-        const getPos = (position) => {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-
-          this.clientLat = latitude;
-          this.clientLng = longitude;
-
-          // this.coordinates.pop()
-
-          // this.coordinates.push({ x: latitude, y: longitude });
-
-          // console.log(`lat : ${latitude} - lng : ${longitude}`);
-
-          //this.calculateDistance('41.1003848', '28.8835792', '37.8468', '29.0848')
-
-          // Do something with the position
-        };
-
-        // This will open permission popup
-        navigator.geolocation.getCurrentPosition(getPos);
-      }, 1000);
-    },
-
     calculateDistance(lat1, lon1, lat2, lon2) {
       var R = 10000; // km
       var dLat = this.toRad(lat2 - lat1);
