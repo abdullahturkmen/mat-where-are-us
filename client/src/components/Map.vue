@@ -1,6 +1,5 @@
 <template>
   <div style="height: 100vh; width: 100%">
-    {{ getServerAllCoordinates }}
     <l-map ref="map" v-model:zoom="zoom" :center="[userLat, userLng]">
       <l-tile-layer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

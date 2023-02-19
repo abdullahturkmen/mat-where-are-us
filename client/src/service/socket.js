@@ -13,10 +13,7 @@ export function useSocketMethods(socket) {
     socket.on("allUserCoordinates", allUserCoordinatesServer => {
         var filteredDatas = []
 
-        // filteredDatas = allUserCoordinatesServer;
-
-        // Object.entries(allUserCoordinates.value).map(e => console.log('e : ', e[1]))
-        // console.log("grup kontrol : ", Object.entries(allUserCoordinates.value).filter(e => e[1].group === localStorage.getItem('userGroup')).length)
+ 
 
         allUserCoordinatesServer.filter(e => e.group == undefined).map(e => {
             filteredDatas.push(e)
@@ -24,10 +21,8 @@ export function useSocketMethods(socket) {
 
         if (localStorage.getItem('userGroup')) {
             if (allUserCoordinatesServer.filter(e => e.group === localStorage.getItem('userGroup')).length === 0) {
-                console.log("ifin içi")
                 localStorage.removeItem('userGroup')
             } else {
-                console.log("elsenin içi")
                 filteredDatas = []
                 allUserCoordinatesServer.filter(e => e.group === localStorage.getItem('userGroup')).map(e => {
                     filteredDatas.push(e)

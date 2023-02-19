@@ -10,16 +10,16 @@ var PORT = process.env.PORT || 3001;
 
 var userCoordinates = [];
 
-app.get('/', function (req, res) {
+app.get('/', (req, res) => {
     res.send()
 })
 
 
-io.on("connection", function (socket) { // console.log("gelldddiiii")
+io.on("connection", (socket) => { // console.log("gelldddiiii")
 
     io.emit("allUserCoordinates", userCoordinates)
 
-    socket.on("leftGroup", function () {
+    socket.on("leftGroup", () => {
 
         // console.log("e : ", e)
 
@@ -36,7 +36,7 @@ io.on("connection", function (socket) { // console.log("gelldddiiii")
         io.emit("allUserCoordinates", userCoordinates)
     })
 
-    socket.on("joinGroup", function (e) {
+    socket.on("joinGroup", (e) => {
 
         // console.log("e : ", e)
 
@@ -54,7 +54,7 @@ io.on("connection", function (socket) { // console.log("gelldddiiii")
     })
 
 
-    socket.on("updateCoordinate", function (e) {
+    socket.on("updateCoordinate", (e) => {
 
         // console.log("e : ", e)
 
@@ -64,7 +64,7 @@ io.on("connection", function (socket) { // console.log("gelldddiiii")
 
         if (userIndex < 0) { // console.log("ifin içi")
             userCoordinates.push({
-                ... e,
+                ...e,
                 user_id: socket.id
             })
         } else {
