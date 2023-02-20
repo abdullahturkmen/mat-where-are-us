@@ -22,7 +22,7 @@ io.on("connection", (socket) => { // console.log("gelldddiiii")
 
     socket.on("sendMessagesServer", (e) => {
 
-         console.log("mesaj : ", e)
+         //console.log("mesaj : ", e)
 
          socket.broadcast.emit("newMessage", e)
        

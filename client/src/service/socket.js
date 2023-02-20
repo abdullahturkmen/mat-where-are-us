@@ -52,9 +52,9 @@ export function useSocketMethods(socket) {
     }
 
     const sendMessagesServer = (msg) => {
-        userMsgList.push(msg)
+        userMsgList.push({msgText: msg, msgDate: new Date()})
         allUserMessages.value = userMsgList;
-        socket.emit("sendMessagesServer", msg);
+        socket.emit("sendMessagesServer", {msgText: msg, msgDate: new Date()});
         console.log("gönderilen mesajlar : ", allUserMessages.value)
         
     } 
@@ -62,7 +62,7 @@ export function useSocketMethods(socket) {
     socket.on('newMessage', newMessage => {
         userMsgList.push(newMessage)
         allUserMessages.value = userMsgList;
-        toast.success(newMessage, {
+        toast.success(`${newMessage.msgText} - ${newMessage.msgDate}`, {
             icon: false,
             autoClose: 4000
         })

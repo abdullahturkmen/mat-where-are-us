@@ -1,7 +1,11 @@
-body {
+*{
     padding: 0;
     margin: 0;
+    font-family: sans-serif;
+    box-sizing: border-box;
 }
+
+
 .buttons {
     position: fixed;
     z-index: 9999999;
@@ -16,39 +20,105 @@ body {
     font-size: 9px;
     border-radius: 5px;
     cursor: pointer;
+    position: relative;
 
     &::before {
+        content: "";
         width: 20px;
         height: 20px;
         display: block;
         margin: 2px auto;
+        background-position: center;
+        background-size: contain;
     }
 
     &-share {
         background-color: #c3c3c3;
         &::before {
-            content: url("../img/share-icon.svg");
+            background-image: url("../img/share-icon.svg");
         }
     }
 
     &-chat {
         background-color: #03a9f4;
         &::before {
-            content: url("../img/chat-icon.svg");
+            background-image: url("../img/chat-icon.svg");
         }
     }
 
-   
     &-group-create {
         background-color: #4caf50;
         &::before {
-            content: url("../img/create-group-icon.svg");
+            background-image: url("../img/create-group-icon.svg");
         }
     }
     &-group-left {
         background-color: #ff5656;
         &::before {
-            content: url("../img/left-group-icon.svg");
+            background-image: url("../img/left-group-icon.svg");
         }
     }
+
+    &-badge {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        left: -10px;
+        top: -10px;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        border-radius: 100%;
+
+        &-error {
+            background-color: red;
+            color: #fff;
+        }
+    }
+}
+
+.msg-content {
+    z-index: 9999999;
+    position: fixed;
+    left: -280px;
+    top: 0;
+    height: 100vh;
+    background-color: #fff;
+    width: 280px;
+    transition: all 0.2s linear;
+    padding: 20px;
+
+    &.active {
+        left: 0;
+    }
+
+    &-list {
+        display: flex;
+        flex-direction: column-reverse;
+        list-style-type: none;
+        margin-top: 20px;
+
+        li{
+            border-bottom: 1px solid gray;
+            margin-bottom: 6px;
+            padding-bottom: 6px;
+
+            &:first-child{
+                border-bottom: 0;
+            }
+        }
+    }
+}
+
+
+.url-copy{
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    visibility: hidden;
+    border: 0 !important;
+    padding: 0;
+    margin: 0;
 }

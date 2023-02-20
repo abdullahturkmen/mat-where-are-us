@@ -1,13 +1,16 @@
 <template>
   <div style="height: 100vh; width: 100%">
+
+    <div class="msg-content" :class="{ active: isMgsContentVisible }">
     <div>
       <input v-model="userMsg" />
       <button @click="sendMessage(userMsg)">gönder</button>
     </div>
 
-    <ul>
-      <li v-for="(msg, index) in getNewMessages" :key="index">{{ msg }}</li>
+    <ul class="msg-content-list">
+      <li v-for="(msg, index) in getNewMessages" :key="index">{{ msg.msgText }} <small>{{ msg.msgDate }}</small></li>
     </ul>
+  </div>
 
     <l-map ref="map" v-model:zoom="zoom" :center="[userLat, userLng]">
       <l-tile-layer
@@ -20,16 +23,12 @@
       </span>
     </l-map>
     <div class="buttons">
-      <button class="btn btn-chat" >
-        Comments
-      </button>
-      <button v-if="userGroup" class="btn btn-share">
-        Share
-      </button>
+      <button v-if="userGroup" class="btn btn-share" @click="copyGroupLink(userGroup)">Share</button>
+      <button class="btn btn-chat" @click="msgContentVisible"><span v-if="!isMgsContentVisible && msgNotReadCount > 0" class="btn-badge btn-badge-error">{{msgNotReadCount}}</span>Comments</button>
       <button
         v-if="!userGroup"
         class="btn btn-group-create"
-        @click="createGroup"
+        @click="joinGroup"
       >
         Create Group
       </button>
@@ -45,6 +44,8 @@ import { useSocketIo, useSocketMethods } from "../service/socket.js";
 import { ref } from "vue";
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LMarker } from "@vue-leaflet/vue-leaflet";
+import {toast} from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 
 export default {
   setup() {
@@ -52,6 +53,8 @@ export default {
     const userLat = ref("41.016147");
     const userLng = ref("28.986725");
     const userMsg = ref("");
+    const isMgsContentVisible = ref(false);
+    const msgNotReadCount = ref(1);
     const socket = useSocketIo();
     const [
       getServerAllCoordinates,
@@ -62,7 +65,16 @@ export default {
       getNewMessages,
     ] = useSocketMethods(socket);
 
-    const createGroup = () => {
+
+    if(document.location.search.split('?g=')[1]){
+      var groupKey = document.location.search.split('?g=')[1]
+      localStorage.setItem("userGroup", groupKey);
+      userGroup.value = groupKey;
+      setUserJoinGroup(groupKey);
+    }
+
+
+    const joinGroup = () => {
       var generatedKey = generateKey(8);
       localStorage.setItem("userGroup", generatedKey);
       userGroup.value = generatedKey;
@@ -80,6 +92,11 @@ export default {
       sendMessagesServer(e);
     };
 
+    const msgContentVisible = () => {
+      msgNotReadCount.value = 0
+      isMgsContentVisible.value = !isMgsContentVisible.value
+    }
+
     const getUserCoordinates = () => {
       // console.log("asdf : ",this.coordinates.length)
       const getPos = (position) => {
@@ -89,20 +106,22 @@ export default {
         userLat.value = latitude;
         userLng.value = longitude;
 
+
         setUserCoordinate({ x: latitude, y: longitude });
         //console.log("gidyyoor", { x: userLat, y: userLng });
       };
 
-      console.log("izin popup : ", navigator.geolocation)
+      //console.log("izin popup : ", navigator);
+
+        navigator.geolocation.getCurrentPosition(getPos);
 
       // This will open permission popup
-      navigator.geolocation.getCurrentPosition(getPos);
     };
 
     const generateKey = (length) => {
       let result = "";
       const characters =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-/+";
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
       const charactersLength = characters.length;
       let counter = 0;
       while (counter < length) {
@@ -111,7 +130,7 @@ export default {
         );
         counter += 1;
       }
-      return result;
+      return `g${result}`;
     };
 
     setInterval(() => {
@@ -120,7 +139,7 @@ export default {
 
     return {
       getServerAllCoordinates,
-      createGroup,
+      joinGroup,
       leftGroup,
       userGroup,
       userLat,
@@ -128,6 +147,9 @@ export default {
       sendMessage,
       userMsg,
       getNewMessages,
+      isMgsContentVisible,
+      msgContentVisible,
+      msgNotReadCount
     };
   },
 
@@ -143,5 +165,29 @@ export default {
       zoom: 6,
     };
   },
+ 
+  methods: {
+    copyGroupLink(e) {
+      var body = document.querySelector("body");
+      var newInput = document.createElement("textarea");
+      newInput.value = e
+      newInput.classList.add(e);
+      newInput.classList.add('url-copy');
+      body.appendChild(newInput)
+
+      var createdElement = document.querySelector(`.${e}`)
+      
+      createdElement.select();
+      createdElement.setSelectionRange(0, 99999);
+
+      navigator.clipboard.writeText(`${document.location.origin}?g=${createdElement.value}`);
+
+      toast.info("Group address copied!", {
+            icon: false,
+            autoClose: 3000
+        })
+
+    }
+  }
 };
 </script>
