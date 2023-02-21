@@ -24,7 +24,7 @@ export function useSocketMethods(socket) {
         if (localStorage.getItem('userGroup')) {
             if (allUserCoordinatesServer.filter(e => e.group === localStorage.getItem('userGroup')).length === 0) {
                 localStorage.removeItem('userGroup')
-                setUserLeftGroup()
+                // setUserLeftGroup()
             } else {
                 filteredDatas = []
                 allUserCoordinatesServer.filter(e => e.group === localStorage.getItem('userGroup')).map(e => {
@@ -32,7 +32,6 @@ export function useSocketMethods(socket) {
                 })
 
             }
-
         }
 
         allUserCoordinates.value = filteredDatas;
@@ -54,20 +53,45 @@ export function useSocketMethods(socket) {
     const sendMessagesServer = (msg) => {
         userMsgList.push({msgText: msg, msgDate: new Date()})
         allUserMessages.value = userMsgList;
-        socket.emit("sendMessagesServer", {msgText: msg, msgDate: new Date()});
-        console.log("gönderilen mesajlar : ", allUserMessages.value)
-        
-    } 
-    
+        socket.emit("sendMessagesServer", {
+            msgText: msg,
+            msgDate: new Date()
+        });
+    };
+
     socket.on('newMessage', newMessage => {
-        userMsgList.push(newMessage)
-        allUserMessages.value = userMsgList;
-        toast.success(`${newMessage.msgText} - ${newMessage.msgDate}`, {
-            icon: false,
-            autoClose: 4000
-        })
-        console.log("gelen mesajlar : ", allUserMessages.value)
-        
+
+        var filteredMessages = null
+
+        filteredMessages = newMessage
+        if (localStorage.getItem('userGroup') || newMessage.hasOwnProperty('group')) {
+            filteredMessages = null
+
+            if (newMessage.hasOwnProperty('group')) {
+
+                if (newMessage.group === localStorage.getItem('userGroup')) {
+
+                    filteredMessages = newMessage
+                }
+            }
+        }
+
+
+        if (filteredMessages != null) {
+
+            userMsgList.push(filteredMessages)
+            allUserMessages.value = userMsgList;
+            toast.success(`${
+                newMessage.msgText
+            } - ${
+                newMessage.msgDate
+            }`, {
+                icon: false,
+                autoClose: 4000
+            })
+
+        }
+
     })
 
 

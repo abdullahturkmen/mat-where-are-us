@@ -23,17 +23,17 @@
       </span>
     </l-map>
     <div class="buttons">
-      <button v-if="userGroup" class="btn btn-share" @click="copyGroupLink(userGroup)">Share</button>
-      <button class="btn btn-chat" @click="msgContentVisible"><span v-if="!isMgsContentVisible && msgNotReadCount > 0" class="btn-badge btn-badge-error">{{msgNotReadCount}}</span>Comments</button>
+      <button v-if="userGroup" class="btn btn-share" @click="copyGroupLink(userGroup)">Grubu Paylaş</button>
+      <button class="btn btn-chat" @click="msgContentVisible"><span v-if="!isMgsContentVisible && msgNotReadCount > 0" class="btn-badge btn-badge-error">{{msgNotReadCount}}</span>Sohbet</button>
       <button
         v-if="!userGroup"
         class="btn btn-group-create"
         @click="joinGroup"
       >
-        Create Group
+        Grup Kur
       </button>
       <button v-if="userGroup" class="btn btn-group-left" @click="leftGroup">
-        Left Group
+        Gruptan Çık
       </button>
     </div>
   </div>
@@ -182,7 +182,7 @@ export default {
 
       navigator.clipboard.writeText(`${document.location.origin}?g=${createdElement.value}`);
 
-      toast.info("Group address copied!", {
+      toast.info("Grup adresi kopyalandı!", {
             icon: false,
             autoClose: 3000
         })

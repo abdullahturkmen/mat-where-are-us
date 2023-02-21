@@ -18,15 +18,32 @@ app.get('/', (req, res) => {
 
 io.on("connection", (socket) => { // console.log("gelldddiiii")
 
+    let userIndex = userCoordinates.findIndex(x => x.user_id === socket.id)
+
+        if (userIndex < 0) {
+            userCoordinates.push({
+                x: '',
+                y: '',
+                user_id: socket.id,
+            })
+        }
+
+
+
     io.emit("allUserCoordinates", userCoordinates)
 
     socket.on("sendMessagesServer", (e) => {
+        
+        if (userCoordinates.find(e => e.user_id === socket.id).hasOwnProperty('group')) { 
+            // console.log("user group : ", userCoordinates.find(e => e.user_id === socket.id))
+            e.group = userCoordinates.find(e => e.user_id === socket.id).group
+        }
 
-         //console.log("mesaj : ", e)
+        // console.log("mesaj : ", e)
 
-         socket.broadcast.emit("newMessage", e)
-       
-        //io.emit("allUserCoordinates", userCoordinates)
+        socket.broadcast.emit("newMessage", e)
+
+        // io.emit("allUserCoordinates", userCoordinates)
     })
 
     socket.on("leftGroup", () => {
@@ -48,11 +65,10 @@ io.on("connection", (socket) => { // console.log("gelldddiiii")
 
     socket.on("joinGroup", (e) => {
 
-        // console.log("e : ", e)
-
         // console.log("user id : ", userCoordinates.findIndex(e => e.user_id === socket.id))
 
-        var userIndex = userCoordinates.findIndex(e => e.user_id === socket.id)
+        let userIndex = userCoordinates.findIndex(x => x.user_id === socket.id)
+
 
         if (userIndex >= 0) {
             userCoordinates[userIndex] = {
@@ -64,13 +80,9 @@ io.on("connection", (socket) => { // console.log("gelldddiiii")
     })
 
 
-    socket.on("updateCoordinate", (e) => {
+    socket.on("updateCoordinate", (e) => { // console.log("e : ", e)
 
-        // console.log("e : ", e)
-
-        // console.log("user id : ", userCoordinates.findIndex(e => e.user_id === socket.id))
-
-        var userIndex = userCoordinates.findIndex(e => e.user_id === socket.id)
+        var userIndex = userCoordinates.findIndex(x => x.user_id === socket.id)
 
         if (userIndex < 0) { // console.log("ifin içi")
             userCoordinates.push({
