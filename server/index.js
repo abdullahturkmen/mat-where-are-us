@@ -33,6 +33,8 @@ io.on("connection", (socket) => { // console.log("gelldddiiii")
     io.emit("allUserCoordinates", userCoordinates)
 
     socket.on("sendMessagesServer", (e) => {
+
+        //console.log("e : ", e)
         
         if (userCoordinates.find(e => e.user_id === socket.id).hasOwnProperty('group')) { 
             // console.log("user group : ", userCoordinates.find(e => e.user_id === socket.id))

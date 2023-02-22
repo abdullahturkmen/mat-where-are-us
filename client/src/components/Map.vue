@@ -1,16 +1,19 @@
 <template>
   <div style="height: 100vh; width: 100%">
+    <div class="msg-content" :class="{ active: getMessageSidebarVisible }">
+      <div class="msg-sender">
+        <input v-model="userMsg" />
+        <button class="btn btn-send-msg" @click="sendMessage(userMsg)"></button>
+      </div>
 
-    <div class="msg-content" :class="{ active: isMgsContentVisible }">
-    <div>
-      <input v-model="userMsg" />
-      <button @click="sendMessage(userMsg)">gönder</button>
+      <ul class="msg-content-list">
+        <li v-for="(msg, index) in getMessageList" :key="index">
+          {{ msg.msgText }} <small>{{ timeConvert(msg.msgDate) }}</small>
+        </li>
+      </ul>
+
+      <button class="msg-content-close" @click="msgContentVisible">&#x2715;</button>
     </div>
-
-    <ul class="msg-content-list">
-      <li v-for="(msg, index) in getNewMessages" :key="index">{{ msg.msgText }} <small>{{ msg.msgDate }}</small></li>
-    </ul>
-  </div>
 
     <l-map ref="map" v-model:zoom="zoom" :center="[userLat, userLng]">
       <l-tile-layer
@@ -19,22 +22,32 @@
         name="OpenStreetMap"
       ></l-tile-layer>
       <span v-for="(coord, index) in getServerAllCoordinates" :key="index">
-        <l-marker :lat-lng="[coord.x, coord.y]"> </l-marker>
+        <l-marker :lat-lng="[coord.x, coord.y]" @click="getMarkerCoord(coord.x, coord.y)"> </l-marker>
       </span>
     </l-map>
     <div class="buttons">
-      <button v-if="userGroup" class="btn btn-share" @click="copyGroupLink(userGroup)">Grubu Paylaş</button>
-      <button class="btn btn-chat" @click="msgContentVisible"><span v-if="!isMgsContentVisible && msgNotReadCount > 0" class="btn-badge btn-badge-error">{{msgNotReadCount}}</span>Sohbet</button>
+      <button
+        v-if="userGroup"
+        class="btn btn-share"
+        @click="copyGroupLink(userGroup)"
+      ></button>
+      <button class="btn btn-chat" @click="msgContentVisible">
+        <span
+          v-if="!getMessageSidebarVisible && getMessageCount > 0"
+          class="btn-badge btn-badge-error"
+          >{{ getMessageCount }}</span
+        >
+      </button>
       <button
         v-if="!userGroup"
         class="btn btn-group-create"
         @click="joinGroup"
-      >
-        Grup Kur
-      </button>
-      <button v-if="userGroup" class="btn btn-group-left" @click="leftGroup">
-        Gruptan Çık
-      </button>
+      ></button>
+      <button
+        v-if="userGroup"
+        class="btn btn-group-left"
+        @click="leftGroup"
+      ></button>
     </div>
   </div>
 </template>
@@ -44,8 +57,10 @@ import { useSocketIo, useSocketMethods } from "../service/socket.js";
 import { ref } from "vue";
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LMarker } from "@vue-leaflet/vue-leaflet";
-import {toast} from 'vue3-toastify';
-import 'vue3-toastify/dist/index.css';
+import { toast } from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
+import moment from 'moment';
+
 
 export default {
   setup() {
@@ -53,8 +68,6 @@ export default {
     const userLat = ref("41.016147");
     const userLng = ref("28.986725");
     const userMsg = ref("");
-    const isMgsContentVisible = ref(false);
-    const msgNotReadCount = ref(1);
     const socket = useSocketIo();
     const [
       getServerAllCoordinates,
@@ -62,17 +75,15 @@ export default {
       setUserJoinGroup,
       setUserLeftGroup,
       sendMessagesServer,
-      getNewMessages,
+      store,
     ] = useSocketMethods(socket);
 
-
-    if(document.location.search.split('?g=')[1]){
-      var groupKey = document.location.search.split('?g=')[1]
+    if (document.location.search.split("?g=")[1]) {
+      var groupKey = document.location.search.split("?g=")[1];
       localStorage.setItem("userGroup", groupKey);
       userGroup.value = groupKey;
       setUserJoinGroup(groupKey);
     }
-
 
     const joinGroup = () => {
       var generatedKey = generateKey(8);
@@ -92,11 +103,6 @@ export default {
       sendMessagesServer(e);
     };
 
-    const msgContentVisible = () => {
-      msgNotReadCount.value = 0
-      isMgsContentVisible.value = !isMgsContentVisible.value
-    }
-
     const getUserCoordinates = () => {
       // console.log("asdf : ",this.coordinates.length)
       const getPos = (position) => {
@@ -106,14 +112,13 @@ export default {
         userLat.value = latitude;
         userLng.value = longitude;
 
-
         setUserCoordinate({ x: latitude, y: longitude });
         //console.log("gidyyoor", { x: userLat, y: userLng });
       };
 
       //console.log("izin popup : ", navigator);
 
-        navigator.geolocation.getCurrentPosition(getPos);
+      navigator.geolocation.getCurrentPosition(getPos);
 
       // This will open permission popup
     };
@@ -146,10 +151,6 @@ export default {
       userLng,
       sendMessage,
       userMsg,
-      getNewMessages,
-      isMgsContentVisible,
-      msgContentVisible,
-      msgNotReadCount
     };
   },
 
@@ -165,29 +166,52 @@ export default {
       zoom: 6,
     };
   },
- 
+  computed: {
+    getMessageCount() {
+      return this.$store.getters.getMessageCount;
+    },
+    getMessageSidebarVisible() {
+      return this.$store.getters.getMessageSidebarVisible;
+    },
+    getMessageList() {
+      return this.$store.getters.getMessageList;
+    },
+  },
   methods: {
+    timeConvert(date){
+      return moment(date).format("hh:mm")
+    },
+    getMarkerCoord(x,y){
+      console.log("coodinatlar : ", {xx: x, yy: y})
+    },
+    msgContentVisible() {
+      this.$store.dispatch(
+        "msgSidebarVisibiltyChange",
+        !this.$store.getters.getMessageSidebarVisible
+      );
+    },
     copyGroupLink(e) {
       var body = document.querySelector("body");
       var newInput = document.createElement("textarea");
-      newInput.value = e
+      newInput.value = e;
       newInput.classList.add(e);
-      newInput.classList.add('url-copy');
-      body.appendChild(newInput)
+      newInput.classList.add("url-copy");
+      body.appendChild(newInput);
 
-      var createdElement = document.querySelector(`.${e}`)
-      
+      var createdElement = document.querySelector(`.${e}`);
+
       createdElement.select();
       createdElement.setSelectionRange(0, 99999);
 
-      navigator.clipboard.writeText(`${document.location.origin}?g=${createdElement.value}`);
+      navigator.clipboard.writeText(
+        `${document.location.origin}?g=${createdElement.value}`
+      );
 
       toast.info("Grup adresi kopyalandı!", {
-            icon: false,
-            autoClose: 3000
-        })
-
-    }
-  }
+        icon: false,
+        autoClose: 3000,
+      });
+    },
+  },
 };
 </script>

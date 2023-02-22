@@ -1,10 +1,9 @@
-*{
+* {
     padding: 0;
     margin: 0;
     font-family: sans-serif;
     box-sizing: border-box;
 }
-
 
 .buttons {
     position: fixed;
@@ -21,7 +20,8 @@
     border-radius: 5px;
     cursor: pointer;
     position: relative;
-    padding: 2px 5px;
+    padding: 4px 8px;
+    border: 0;
 
     &::before {
         content: "";
@@ -41,7 +41,7 @@
     }
 
     &-chat {
-        background-color: #03a9f4;
+        background-color: #71e7b1;
         &::before {
             background-image: url("../img/chat-icon.svg");
         }
@@ -57,6 +57,12 @@
         background-color: #ff5656;
         &::before {
             background-image: url("../img/left-group-icon.svg");
+        }
+    }
+    &-send-msg {
+        background-color: #35a065;
+        &::before {
+            background-image: url("../img/send-msg-icon.svg");
         }
     }
 
@@ -82,13 +88,17 @@
 .msg-content {
     z-index: 9999999;
     position: fixed;
-    left: -280px;
+    left: -300px;
     top: 0;
     height: 100vh;
-    background-color: #fff;
+    background-color: #f5f5f5;
     width: 280px;
     transition: all 0.2s linear;
     padding: 20px;
+    box-shadow: 0 0 10px #000000c9;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 20px;
 
     &.active {
         left: 0;
@@ -96,24 +106,58 @@
 
     &-list {
         display: flex;
-        flex-direction: column-reverse;
+        flex-direction: column;
         list-style-type: none;
-        margin-top: 20px;
+        gap: 10px;
 
-        li{
-            border-bottom: 1px solid gray;
-            margin-bottom: 6px;
-            padding-bottom: 6px;
+        li {
+            background-color: #fbfbfb;
+            padding: 8px;
+            display: flex;
+            flex-direction: column-reverse;
+            border-radius: 8px;
+            font-size: 14px;
+            animation: new-msg 2s linear;
+            color: #2e2e2e;
 
-            &:first-child{
-                border-bottom: 0;
+            small {
+                font-size: 10px;
+                margin-left: auto;
+                padding: 4px;
+                background: #36b368;
+                color: #fff;
+                border-radius: 4px;
             }
         }
     }
+
+    .msg-sender {
+        display: flex;
+        width: 100%;
+
+        input {
+            flex: auto;
+        }
+    }
+
+    &-close {
+        position: absolute;
+        right: -16px;
+        width: 32px;
+        height: 32px;
+        border-radius: 100%;
+        border: 0;
+        background: #ff7070;
+        color: #fff;
+        top: 20px;
+        font-weight: 600;
+        font-size: 20px;
+        padding-bottom: 3px;
+        cursor: pointer;
+    }
 }
 
-
-.url-copy{
+.url-copy {
     position: absolute;
     width: 0;
     height: 0;
@@ -122,4 +166,14 @@
     border: 0 !important;
     padding: 0;
     margin: 0;
+}
+
+@keyframes new-msg {
+    from {
+        opacity: 0.2;
+        background-color: #bcf5e5;
+    }
+    to {
+        opacity: 1;
+    }
 }

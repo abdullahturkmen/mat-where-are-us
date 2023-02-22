@@ -2,6 +2,7 @@ import {ref} from "vue";
 import openSocket from "socket.io-client";
 import {toast} from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
+import store from '@/store/index.js';
 
 export function useSocketIo() {
     return openSocket(process.env.VUE_APP_SERVER_ADDRESS, {transports: ['websocket']});
@@ -11,8 +12,6 @@ export function useSocketMethods(socket) {
 
 
     const allUserCoordinates = ref("");
-    const allUserMessages = ref("");
-    var userMsgList = []
 
     socket.on("allUserCoordinates", allUserCoordinatesServer => {
         var filteredDatas = []
@@ -51,8 +50,11 @@ export function useSocketMethods(socket) {
     }
 
     const sendMessagesServer = (msg) => {
-        userMsgList.push({msgText: msg, msgDate: new Date()})
-        allUserMessages.value = userMsgList;
+        store.dispatch('newMessage', {
+            msgText: msg,
+            msgDate: new Date()
+        });
+
         socket.emit("sendMessagesServer", {
             msgText: msg,
             msgDate: new Date()
@@ -76,19 +78,24 @@ export function useSocketMethods(socket) {
             }
         }
 
-
         if (filteredMessages != null) {
 
-            userMsgList.push(filteredMessages)
-            allUserMessages.value = userMsgList;
-            toast.success(`${
-                newMessage.msgText
-            } - ${
-                newMessage.msgDate
-            }`, {
-                icon: false,
-                autoClose: 4000
-            })
+            store.dispatch('newMessage', filteredMessages);
+
+            if (!store.getters.getMessageSidebarVisible) {
+
+                toast.success(`${
+                    newMessage.msgText
+                } - ${
+                    newMessage.msgDate
+                }`, {
+                    icon: false,
+                    autoClose: 4000
+                })
+
+                store.dispatch('increaseMessageCount');
+            }
+
 
         }
 
@@ -101,6 +108,6 @@ export function useSocketMethods(socket) {
         setUserJoinGroup,
         setUserLeftGroup,
         sendMessagesServer,
-        allUserMessages
+        store
     ];
 }
