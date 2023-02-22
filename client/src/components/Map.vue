@@ -179,7 +179,7 @@ export default {
   },
   methods: {
     timeConvert(date){
-      return moment(date).format("hh:mm")
+      return moment(date).format("kk:mm")
     },
     getMarkerCoord(x,y){
       console.log("coodinatlar : ", {xx: x, yy: y})
