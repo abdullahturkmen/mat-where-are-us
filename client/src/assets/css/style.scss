@@ -124,7 +124,7 @@
     gap: 20px;
 
     @media screen and (max-width: 479px) {
-        height: calc(100% - 44px);
+        height: calc(100vh - 44px);
         transition: 0;
         width: 100%;
         left: -100%;
