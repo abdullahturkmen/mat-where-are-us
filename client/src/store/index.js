@@ -23,7 +23,9 @@ export default createStore({
             if (state.msgSidebarVisible) {
                 state.counter = 0
             }
-
+        },
+        resetMessageCount(state) {
+            state.counter = 0
         },
         msgSidebarVisibiltyChange(state, value) {
             state.msgSidebarVisible = value
@@ -35,6 +37,9 @@ export default createStore({
     actions: {
         increaseMessageCount(context) {
             context.commit('increaseMessageCount')
+        },
+        resetMessageCount(context) {
+            context.commit('resetMessageCount')
         },
         msgSidebarVisibiltyChange(context, value) {
             context.commit('msgSidebarVisibiltyChange', value)

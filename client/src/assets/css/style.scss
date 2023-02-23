@@ -3,6 +3,7 @@
     margin: 0;
     font-family: sans-serif;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .buttons {
@@ -13,6 +14,17 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+
+    @media screen and (max-width: 479px) {
+        width: 100%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        flex-direction: row;
+        justify-content: space-around;
+        background-color: #fff;
+        padding: 6px;
+    }
 }
 
 .btn {
@@ -36,33 +48,44 @@
     &-share {
         background-color: #c3c3c3;
         &::before {
-            background-image: url("../img/share-icon.svg");
+            background-image: url("../img/icons/share-icon.svg");
         }
     }
 
     &-chat {
         background-color: #71e7b1;
         &::before {
-            background-image: url("../img/chat-icon.svg");
+            background-image: url("../img/icons/chat-icon.svg");
         }
     }
 
     &-group-create {
-        background-color: #4caf50;
+        background-color: #ebea22;
         &::before {
-            background-image: url("../img/create-group-icon.svg");
+            background-image: url("../img/icons/create-group-icon.svg");
         }
     }
     &-group-left {
         background-color: #ff5656;
         &::before {
-            background-image: url("../img/left-group-icon.svg");
+            background-image: url("../img/icons/left-group-icon.svg");
         }
     }
     &-send-msg {
-        background-color: #35a065;
+        background: transparent;
         &::before {
-            background-image: url("../img/send-msg-icon.svg");
+            background-image: url("../img/icons/send-msg-icon.svg");
+        }
+    }
+    &-mobile-map {
+        background-color: #aae8ff;
+
+        &::before {
+            background-image: url("../img/icons/map-icon.svg");
+        }
+
+        @media screen and (min-width: 480px) {
+            display: none;
         }
     }
 
@@ -86,7 +109,7 @@
 }
 
 .msg-content {
-    z-index: 9999999;
+    z-index: 9999;
     position: absolute;
     left: -300px;
     top: 0;
@@ -99,6 +122,13 @@
     display: flex;
     flex-direction: column-reverse;
     gap: 20px;
+
+    @media screen and (max-width: 479px) {
+        height: calc(100% - 44px);
+        transition: 0;
+        width: 100%;
+        left: -100%;
+    }
 
     &.active {
         left: 0;
@@ -134,9 +164,15 @@
     .msg-sender {
         display: flex;
         width: 100%;
+        background: #fff;
+        padding: 5px;
+        border-radius: 100px;
 
         input {
             flex: auto;
+            border: 0;
+            outline: 0;
+            padding-left: 8px;
         }
     }
 
@@ -154,6 +190,10 @@
         font-size: 20px;
         padding-bottom: 3px;
         cursor: pointer;
+
+        @media screen and (max-width: 479px) {
+            display: none;
+        }
     }
 }
 
@@ -175,5 +215,14 @@
     }
     to {
         opacity: 1;
+    }
+}
+
+.mobile-toastr {
+    @media screen and (max-width: 479px) {
+        position: absolute;
+        left: 6px;
+        width: calc(100% - 12px);
+        top: 6px;
     }
 }

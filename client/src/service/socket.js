@@ -86,11 +86,10 @@ export function useSocketMethods(socket) {
 
                 toast.success(`${
                     newMessage.msgText
-                } - ${
-                    newMessage.msgDate
                 }`, {
                     icon: false,
-                    autoClose: 4000
+                    autoClose: 4000,
+                    toastClassName: 'mobile-toastr'
                 })
 
                 store.dispatch('increaseMessageCount');
