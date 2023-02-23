@@ -2,7 +2,7 @@
   <div style="height: 100vh; width: 100%">
     <div class="msg-content" :class="{ active: getMessageSidebarVisible }">
       <div class="msg-sender">
-        <input v-model="userMsg" placeholder="Yaz..."/>
+        <input v-model="userMsg" placeholder="Yaz..." ref="msgInput"/>
         <button class="btn btn-send-msg" @click="sendMessage()"></button>
       </div>
 
@@ -77,6 +77,7 @@ export default {
     const userLat = ref("41.016147");
     const userLng = ref("28.986725");
     const userMsg = ref("");
+    const msgInput = ref("");
     const socket = useSocketIo();
     const [
       getServerAllCoordinates,
@@ -108,6 +109,7 @@ export default {
     };
 
     const sendMessage = () => {
+      msgInput.value.focus();
       if (userMsg.value.trim().length > 0) {
         sendMessagesServer(userMsg.value.trim());
         userMsg.value = "";
@@ -162,6 +164,7 @@ export default {
       userLng,
       sendMessage,
       userMsg,
+      msgInput
     };
   },
 
