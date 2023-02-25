@@ -88,6 +88,16 @@
             display: none;
         }
     }
+    &-select-file {
+        background: transparent;
+        &::before {
+            background-image: url("../img/icons/attachment-icon.svg");
+        }
+
+        input {
+            display: none;
+        }
+    }
 
     &-badge {
         position: absolute;
@@ -149,6 +159,22 @@
             font-size: 14px;
             animation: new-msg 2s linear;
             color: #2e2e2e;
+            position: relative;
+
+            img {
+                max-height: 24vh;
+                object-fit: contain;
+                background: #f7f7f7;
+                border-radius: 4px;
+                margin-bottom: 4px;
+
+                & + small {
+                    position: absolute;
+                    right: 8px;
+                    top: 8px;
+                    background: #36b36880;
+                }
+            }
 
             small {
                 font-size: 10px;
@@ -166,13 +192,61 @@
         width: 100%;
         background: #fff;
         padding: 5px;
-        border-radius: 100px;
+        border-radius: 20px;
+        flex-direction: column;
+        gap: 4px;
+        position: relative;
 
         input {
             flex: auto;
             border: 0;
             outline: 0;
             padding-left: 8px;
+            width: 100%;
+        }
+
+        &-file {
+            img {
+                width: 100%;
+                max-height: 10vh;
+                object-fit: contain;
+                background: #f7f7f7;
+                border-radius: 15px;
+            }
+
+            &-loading {
+                height: 6px;
+                background-image: repeating-linear-gradient(
+                    -45deg,
+                    transparent,
+                    transparent 10px,
+                    #0d1520c9 10px,
+                    #0d1520c9 20px
+                );
+                background-size: 200%;
+                animation: bg-linear 2s infinite linear;
+            }
+
+            &-delete {
+                position: absolute;
+                right: 10px;
+                top: 10px;
+                width: 20px;
+                height: 20px;
+                border-radius: 100%;
+                border: 0;
+                background: #2626266e;
+                color: #fff;
+                font-weight: 600;
+                font-size: 12px;
+                padding-bottom: 2px;
+                cursor: pointer;
+            }
+        }
+
+        &-text {
+            display: flex;
+            width: 100%;
         }
     }
 
@@ -224,5 +298,14 @@
         left: 6px;
         width: calc(100% - 12px);
         top: 6px;
+    }
+}
+
+@keyframes bg-linear {
+    from {
+        background-position-x: 0;
+    }
+    to {
+        background-position-x: -28px;
     }
 }

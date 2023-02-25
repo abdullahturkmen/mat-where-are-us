@@ -49,14 +49,16 @@ export function useSocketMethods(socket) {
         socket.emit("updateCoordinate", value);
     }
 
-    const sendMessagesServer = (msg) => {
+    const sendMessagesServer = (msg, file) => {
         store.dispatch('newMessage', {
             msgText: msg,
+            msgFile: file,
             msgDate: new Date()
         });
 
         socket.emit("sendMessagesServer", {
             msgText: msg,
+            msgFile: file,
             msgDate: new Date()
         });
     };
@@ -84,8 +86,13 @@ export function useSocketMethods(socket) {
 
             if (!store.getters.getMessageSidebarVisible) {
 
+                var toastrMsgText = newMessage.msgText
+                if(newMessage.msgText.length == 0){
+                    toastrMsgText = "Yeni Fotoğraf"
+                }
+
                 toast.success(`${
-                    newMessage.msgText
+                    toastrMsgText
                 }`, {
                     icon: false,
                     autoClose: 4000,

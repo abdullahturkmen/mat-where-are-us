@@ -2,13 +2,36 @@
   <div style="height: 100vh; width: 100%">
     <div class="msg-content" :class="{ active: getMessageSidebarVisible }">
       <div class="msg-sender">
-        <input v-model="userMsg" placeholder="Yaz..." ref="msgInput"/>
-        <button class="btn btn-send-msg" @click="sendMessage()"></button>
+        <div
+          v-if="fileUploadLoadingVisible"
+          class="msg-sender-file-loading"
+        ></div>
+        <div v-if="msgFilePreview" class="msg-sender-file">
+          <img :src="imagePreview" ref="msgFilePreview" />
+          <input v-model="imagePreview" type="hidden" ref="msgFile" />
+          <button @click="deleteFile" class="msg-sender-file-delete">
+            &#x2715;
+          </button>
+        </div>
+        <div class="msg-sender-text">
+          <input
+            v-model="userMsg"
+            placeholder="Yaz..."
+            ref="msgInput"
+            @keyup.enter="sendMessage()"
+          />
+          <label class="btn btn-select-file">
+            <input type="file" @change="onFileSelected" accept="image/*" />
+          </label>
+          <button class="btn btn-send-msg" @click="sendMessage()"></button>
+        </div>
       </div>
 
       <ul class="msg-content-list">
         <li v-for="(msg, index) in getMessageList" :key="index">
-          {{ msg.msgText }} <small>{{ timeConvert(msg.msgDate) }}</small>
+          <div v-if="msg.msgText">{{ msg.msgText }}</div>
+          <img :src="msg.msgFile" v-if="msg.msgFile" />
+          <small>{{ timeConvert(msg.msgDate) }}</small>
         </li>
       </ul>
 
@@ -25,8 +48,8 @@
       ></l-tile-layer>
       <span v-for="(coord, index) in getServerAllCoordinates" :key="index">
         <l-marker
+          @click="getUserID(coord.user_id)"
           :lat-lng="[coord.x, coord.y]"
-          @click="getMarkerCoord(coord.x, coord.y)"
         >
         </l-marker>
       </span>
@@ -78,6 +101,11 @@ export default {
     const userLng = ref("28.986725");
     const userMsg = ref("");
     const msgInput = ref("");
+    const msgFile = ref("");
+    const imagePreview = ref("");
+    const msgFilePreview = ref("");
+    const fileUploadLoadingVisible = ref(false);
+
     const socket = useSocketIo();
     const [
       getServerAllCoordinates,
@@ -110,9 +138,10 @@ export default {
 
     const sendMessage = () => {
       msgInput.value.focus();
-      if (userMsg.value.trim().length > 0) {
-        sendMessagesServer(userMsg.value.trim());
+      if (userMsg.value.trim().length > 0 || imagePreview.value.trim()) {
+        sendMessagesServer(userMsg.value.trim(), imagePreview.value.trim());
         userMsg.value = "";
+        deleteFile();
       }
     };
 
@@ -151,6 +180,55 @@ export default {
       return `g${result}`;
     };
 
+    const onFileSelected = (event) => {
+      deleteFile();
+      const file = event.target.files[0];
+      if (file) {
+        fileUploadLoadingVisible.value = true;
+      }
+      const reader = new FileReader();
+
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const img = new Image();
+        img.src = reader.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+          const MAX_WIDTH = 500;
+          const MAX_HEIGHT = 500;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+
+          imagePreview.value = canvas.toDataURL("image/jpeg", 0.8);
+          msgFilePreview.value = canvas.toDataURL("image/jpeg", 0.8);
+          fileUploadLoadingVisible.value = false;
+        };
+      };
+    };
+
+    const deleteFile = () => {
+      msgFile.value = null;
+      imagePreview.value = "";
+      msgFilePreview.value = null;
+    };
+
     setInterval(() => {
       getUserCoordinates();
     }, 1000);
@@ -164,7 +242,13 @@ export default {
       userLng,
       sendMessage,
       userMsg,
-      msgInput
+      msgInput,
+      msgFile,
+      imagePreview,
+      msgFilePreview,
+      onFileSelected,
+      deleteFile,
+      fileUploadLoadingVisible,
     };
   },
 
@@ -177,7 +261,7 @@ export default {
 
   data() {
     return {
-      zoom: 6,
+      zoom: 16,
     };
   },
   computed: {
@@ -196,8 +280,11 @@ export default {
     timeConvert(date) {
       return moment(date).format("kk:mm");
     },
-    getMarkerCoord(x, y) {
-      console.log("coodinatlar : ", { xx: x, yy: y });
+    getUserID(userId) {
+      console.log("user_id : ", userId);
+      console.log(
+        this.calcDistance("41.102986", "28.889334", "41.036737", "28.985056")
+      );
     },
     msgContentVisible() {
       this.$store.dispatch(
@@ -228,8 +315,26 @@ export default {
       toast.info("Grup adresi kopyalandı!", {
         icon: false,
         autoClose: 3000,
-        toastClassName: 'mobile-toastr'
+        toastClassName: "mobile-toastr",
       });
+    },
+    calcDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371000; // Earth's radius in kilometers
+      const dLat = this.toRad(lat2 - lat1);
+      const dLon = this.toRad(lon2 - lon1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(this.toRad(lat1)) *
+          Math.cos(this.toRad(lat2)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const distance = R * c; // Distance in kilometers
+      return distance;
+    },
+
+    toRad(degrees) {
+      return (degrees * Math.PI) / 180;
     },
   },
 };
