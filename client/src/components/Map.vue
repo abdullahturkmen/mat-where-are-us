@@ -6,9 +6,8 @@
           v-if="fileUploadLoadingVisible"
           class="msg-sender-file-loading"
         ></div>
-        <div v-if="msgFilePreview" class="msg-sender-file">
-          <img :src="imagePreview" ref="msgFilePreview" />
-          <input v-model="imagePreview" type="hidden" ref="msgFile" />
+        <div v-if="getMessageFile" class="msg-sender-file">
+          <img :src="getMessageFile" />
           <button @click="deleteFile" class="msg-sender-file-delete">
             &#x2715;
           </button>
@@ -101,9 +100,7 @@ export default {
     const userLng = ref("28.986725");
     const userMsg = ref("");
     const msgInput = ref("");
-    const msgFile = ref("");
-    const imagePreview = ref("");
-    const msgFilePreview = ref("");
+    const msgFile = ref(null);
     const fileUploadLoadingVisible = ref(false);
 
     const socket = useSocketIo();
@@ -137,9 +134,10 @@ export default {
     };
 
     const sendMessage = () => {
+      msgFile.value = store.getters.getMessageFile;
       msgInput.value.focus();
-      if (userMsg.value.trim().length > 0 || imagePreview.value.trim()) {
-        sendMessagesServer(userMsg.value.trim(), imagePreview.value.trim());
+      if (userMsg.value.trim().length > 0 || msgFile.value) {
+        sendMessagesServer(userMsg.value.trim(), msgFile.value);
         userMsg.value = "";
         deleteFile();
       }
@@ -216,17 +214,14 @@ export default {
           canvas.height = height;
           ctx.drawImage(img, 0, 0, width, height);
 
-          imagePreview.value = canvas.toDataURL("image/jpeg", 0.8);
-          msgFilePreview.value = canvas.toDataURL("image/jpeg", 0.8);
+          store.dispatch('newMessageFile', canvas.toDataURL("image/jpeg", 0.8));
           fileUploadLoadingVisible.value = false;
         };
       };
     };
 
     const deleteFile = () => {
-      msgFile.value = null;
-      imagePreview.value = "";
-      msgFilePreview.value = null;
+      store.dispatch('newMessageFile', null);
     };
 
     setInterval(() => {
@@ -244,8 +239,6 @@ export default {
       userMsg,
       msgInput,
       msgFile,
-      imagePreview,
-      msgFilePreview,
       onFileSelected,
       deleteFile,
       fileUploadLoadingVisible,
@@ -275,6 +268,9 @@ export default {
     getMessageList() {
       return this.$store.getters.getMessageList;
     },
+    getMessageFile() {
+      return this.$store.getters.getMessageFile;
+    }
   },
   methods: {
     timeConvert(date) {
